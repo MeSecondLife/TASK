@@ -38,4 +38,11 @@
 <Status>NEW</Status>
 <Complete/>
 </Task>
+<Task caption="тренироваться" id="8">
+<Description>Тренироваться в спортзале</Description>
+<Priority>20</Priority>
+<Deadline>12-12-2027</Deadline>
+<Status>NEW</Status>
+<Complete/>
+</Task>
 </Root>
