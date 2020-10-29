@@ -9,36 +9,37 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
-class RemoveCommand extends Command//команда remove
-{
+/**
+ * класс для удаления задач
+ */
+class RemoveCommand extends Command {
     public RemoveCommand(){
-        name = "remove";
+        setName("remove");
+        setDescription("удаляет задания");
     }
 
-    public void action() {
-        DocumentBuilder documentBuilder;
-        try {
-            documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            Document document = documentBuilder.parse("To-Do List.xml");
+    /**
+     * Метод, выполняющий действие, соответствующее команде
+     * @param obj - универсальный параметр
+     * @param args - передаётся команда от пользователя
+     */
+    public void action(Object obj, ArrayList<String> args) {
 
-            System.out.println("Введите id: ");
-            String id = new Scanner(System.in).nextLine();
+        System.out.println("Введите id: ");
+        String id = new Scanner(System.in).nextLine();
 
-            NodeList tasks = document.getElementsByTagName("Task");
-            for(int i = 0; i < tasks.getLength(); i++){
-                if(tasks.item(i).getAttributes().getNamedItem("id").getNodeValue().equals(id)) {
-                    tasks.item(i).getParentNode().removeChild(tasks.item(i));
-                    NewTask.writeDocument(document, "To-Do List.xml");
-                    System.out.println("Задание id = " + id + " успешно удалено");
-                    return;
-                }
+        List<Task> tasks = (List<Task>)obj;
+
+        for(Task task : tasks){
+            if(task.getID() == Integer.parseInt(id)){
+                tasks.remove(task);
+                System.out.println("Задание успешно удалено!");
+                return;
             }
-
-            System.out.println("Задание с id = " + id + " не найдено!");
-
-        } catch (IOException | SAXException | ParserConfigurationException e) {
-            e.printStackTrace();
         }
+
+        System.out.println("Задание с id = " + id + " не найдено!");
+
     }
 }
 

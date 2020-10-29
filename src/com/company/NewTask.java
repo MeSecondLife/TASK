@@ -14,102 +14,54 @@ import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
 
-class NewTask extends Command//команда new
-{
+/**
+ * Класс для создания новой задачи
+ */
+class NewTask extends Command {
     public NewTask(){
-        name = "new";
+        setName("new");
+        setDescription("создаёт новую задачу");
     }
 
-    public void action(){
+    /**
+     * метод выполняющие действия, соответствующие команде.
+     * @param obj - универсальный параметр
+     * @param args - передаётся команда от пользователя
+     */
+    public void action(Object obj, ArrayList<String> args) {
         Scanner scanner = new Scanner(System.in);
-        try {
-            DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            Document document = documentBuilder.parse("To-Do List.xml");
+        ArrayList<Task> tasks = (ArrayList<Task>)obj;
+        Task lastItem = new Task();
 
-            // Получаем корневой элемент
-            Element root = document.getDocumentElement();
+        lastItem.setID(getID(tasks));
 
-            // Добавление Task в файл
-            Element task = document.createElement("Task");
+        System.out.println("заголовок: ");
+        lastItem.setCaption(scanner.nextLine());
 
-            task.setAttribute("id", getID(document.getElementsByTagName("Task")));
+        System.out.println("описание задачи: ");
+        lastItem.setDescription(scanner.nextLine());
 
-            System.out.println("заголовок: ");
-            task.setAttribute("caption", scanner.nextLine());
+        System.out.println("срок выполнения: ");
+        lastItem.setDeadline(scanner.nextLine());
 
-            System.out.println("описание задачи: ");
-            Element description = document.createElement("Description");
-            description.setTextContent(scanner.nextLine());
-            task.appendChild(description);
+        System.out.println("приоритет: ");
+        lastItem.setPriority(scanner.nextLine());
 
-            setPriority(document, task);//Добавление приоритета
+        lastItem.setStatus(TaskStatus.NEW);
 
-            System.out.println("срок выполнения: ");
-            Element deadline = document.createElement("Deadline");
-            deadline.setTextContent(scanner.nextLine());
-            task.appendChild(deadline);
-
-            Element status = document.createElement("Status");
-            status.setTextContent(TaskStatus.NEW.toString());
-            task.appendChild(status);
-
-            Element complete = document.createElement("Complete");
-            task.appendChild(complete);
-
-            root.appendChild(task);
-
-            document.getDocumentElement().appendChild(task);// Добавляем задачу в корневой элемент
-            writeDocument(document, "To-Do List.xml");
-        } catch (ParserConfigurationException | SAXException | IOException e) {
-            e.printStackTrace(System.out);
-        }
+        tasks.add(lastItem);
     }
-    public static void writeDocument(Document document, String path) throws TransformerFactoryConfigurationError {
-        try {
-            Transformer tr = TransformerFactory.newInstance().newTransformer();
-            tr.setOutputProperty(OutputKeys.INDENT, "yes");//Нужно для построчной записи
-            DOMSource source = new DOMSource(document);
-            FileOutputStream fos = new FileOutputStream(path);
-            StreamResult result = new StreamResult(fos);
-            tr.transform(source, result);
-        } catch (TransformerException | IOException e) {
-            e.printStackTrace(System.out);
-        }
-    }
-    private String getID(NodeList tasks){
-        int lastIndex = tasks.getLength();
-        if(lastIndex > 0) {
-            Integer id = Integer.parseInt(tasks.item(lastIndex-1).getAttributes().getNamedItem("id").getNodeValue()) + 1;
-            String strID = id.toString();
-            return strID;
-        }
-        return "0";
-    }
-    public static void setPriority(Document document, Node task){
-        Scanner scanner = new Scanner(System.in);
 
-        System.out.println("приоритет (1-100): ");
-        Element priority = document.createElement("Priority");
+    private int getID(ArrayList<Task> tasks){
+        Integer id = 0;
 
-        do {
-            Integer input = 0;
-
-            try {
-                input = Integer.parseInt(scanner.nextLine());}
-            catch (NumberFormatException e) {
-                System.out.println("некорректный ввод значния приоритета!\n Введите другое значение:");
-                continue;
+        for(Task task : tasks){
+            if(task.getID() > id){
+                id = task.getID();
             }
+        }
 
-            if (input >= 0 && input <= 100) {
-                priority.setTextContent(input.toString());
-                task.appendChild(priority);
-                break;
-            } else {
-                System.out.println("некорректный ввод значния приоритета!\n Введите другое значение:");
-            }
-
-        }while(true);//приоритет
+        id++;
+        return id;
     }
 }
-

@@ -3,74 +3,63 @@ package com.company;
 import javax.xml.parsers.DocumentBuilder;
 import org.w3c.dom.Document;
 import javax.xml.parsers.DocumentBuilderFactory;
+import java.util.*;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
-
-class ListCommand extends Command//команда list
-{
+/**
+ * класс для вывода задач по статусам
+ */
+class ListCommand extends Command {
     public ListCommand(){
-        name = "list";
+        setName("list");
+        setDescription("выводит задания");
     }
 
-    public void action(){
+    /**
+     * Метод, выполняющий действие, соответствующее команде
+     * @param obj - универсальный параметр
+     * @param args - передаётся команда от пользователя
+     */
+    public void action(Object obj, ArrayList<String> args){
         System.out.println("Список всех задач:");
-        ShowAllTasks();
-    }
+        ArrayList<Task> tasks = (ArrayList<Task>)obj;
 
-    private void ShowAllTasks(){
-        try {
-            DocumentBuilder documentBuilder;
-            documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            Document document = documentBuilder.parse("To-Do List.xml");
-
-            NodeList nodeList = document.getElementsByTagName("Task");
-
-            for (int i = 0; i < nodeList.getLength(); i++) {
-                if (nodeList.item(i).getNodeType() == Node.ELEMENT_NODE) {
-                    Element el = (Element) nodeList.item(i);
-                    if (el.getNodeName().contains("Task")) {
-                        writeList(el);
+        if(args.size() == 3) {
+            if (args.get(1).equals("-s")) {
+                if (args.get(2).equals("done")) {
+                    for (Task task : tasks) {
+                        if (task.getStatus().toString().equals("DONE"))
+                            printTask(task);
+                    }
+                }
+                if (args.get(2).equals("new")) {
+                    for (Task task : tasks) {
+                        if (task.getStatus().toString().equals("NEW"))
+                            printTask(task);
                     }
                 }
             }
-        } catch (ParserConfigurationException | SAXException | IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void tasksSelectionWrite(TaskStatus status){
-        try {
-            DocumentBuilder documentBuilder;
-            documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            Document document = documentBuilder.parse("To-Do List.xml");
-
-            NodeList nodeList = document.getElementsByTagName("Task");
-
-            for (int i = 0; i < nodeList.getLength(); i++) {
-                if (nodeList.item(i).getNodeType() == Node.ELEMENT_NODE) {
-                    Element el = (Element) nodeList.item(i);
-
-                    if (el.getElementsByTagName("Status").item(0).getTextContent().equals(status.toString()))
-                        ListCommand.writeList(el);
-                }
+        } else{
+            for (Task task : tasks) {
+                printTask(task);
             }
-        } catch (ParserConfigurationException | SAXException | IOException e) {
-            e.printStackTrace();
         }
     }
 
-    public static void writeList(Element element) {
-        System.out.println("Задача\nid =" + element.getAttributes().getNamedItem("id").getNodeValue());
-        System.out.println("Описание: " + element.getElementsByTagName("Description").item(0).getTextContent());
-        System.out.println("Приоритет: " + element.getElementsByTagName("Priority").item(0).getTextContent());
-        System.out.println("Дедлайн: " + element.getElementsByTagName("Deadline").item(0).getTextContent());
-        System.out.println("Статус: " + element.getElementsByTagName("Status").item(0).getTextContent());
-        System.out.println("Дата завершения: " + element.getElementsByTagName("Complete").item(0).getTextContent());
-
-        System.out.println();
+    private void printTask(Task task){
+        System.out.println("id = " + task.getID());
+        System.out.println("заголовок: " + task.getCaption());
+        System.out.println("описание: " + task.getDescription());
+        System.out.println("дедлайн: " + task.getDeadline());
+        System.out.println("приоритет: " + task.getPriority());
+        System.out.println("статус: " + task.getStatus());
+        System.out.println("дата завершения: " + task.getComplete());
     }
 }
-

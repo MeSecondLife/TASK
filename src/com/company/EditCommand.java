@@ -9,82 +9,74 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
-class EditCommand extends Command//команда edit
-{
+/**
+ *  класс для изменения задач
+ */
+class EditCommand extends Command {
     public EditCommand() {
-        name = "edit";
+        setName("edit");
+        setDescription("изменяет задания");
     }
 
-    public void action() {
-        DocumentBuilder documentBuilder;
-        try {
-            documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            Document document = documentBuilder.parse("To-Do List.xml");
-
-            NodeList tasks = document.getElementsByTagName("Task");
-            NodeList descriptions = document.getElementsByTagName("Description");
-            NodeList priority = document.getElementsByTagName("Priority");
-            NodeList deadline = document.getElementsByTagName("Deadline");
-            NodeList status = document.getElementsByTagName("Status");
-            NodeList complete = document.getElementsByTagName("Complete");
-
-            Scanner scanner = new Scanner(System.in);
-            System.out.println("id: ");
-            String id = scanner.nextLine();
-
-            for (int i = 0; i < tasks.getLength(); i++) {
-                if (tasks.item(i).getAttributes().getNamedItem("id").getNodeValue().equals(id)) {
-                    editChild(document, tasks.item(i), (Element) descriptions.item(i));
-                    editChild(document, tasks.item(i), (Element) priority.item(i));
-                    editChild(document, tasks.item(i), (Element) deadline.item(i));
-                    editChild(document, tasks.item(i), (Element) status.item(i));
-                    editChild(document, tasks.item(i), (Element) complete.item(i));
-
-                    return;
-                }
-            }
-
-            System.out.println("Задание с id = " + id + " не найдено!");
-
-        } catch (ParserConfigurationException | IOException | SAXException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void editChild(Document doc, Node task, Element changeableElement) {
+    /**
+     * Метод, выполняющий действие, соответствующее команде
+     * @param obj - универсальный параметр
+     * @param args - передаётся команда от пользователя
+     */
+    public void action(Object obj, ArrayList<String> args) {
         Scanner scanner = new Scanner(System.in);
+        ArrayList<Task> tasks = (ArrayList<Task>)obj;
 
-        System.out.println("Изменить " + changeableElement.getTagName() + "? (Y/N(Любая кнопка))");
-        if (scanner.nextLine().equals("Y")) {
-            if (changeableElement.getTagName().equals("Status")) {
-                System.out.println("Новое значение:");
+        System.out.println("ID изменяемого объекта: ");
+        int id = Integer.parseInt(scanner.nextLine());
 
-                switch (scanner.nextLine()){
-                    case "NEW":
-                        changeableElement.setTextContent(TaskStatus.NEW.toString());
-                        System.out.println("Status изменён на NEW");
-                        break;
-                    case "IN_PROGRESS":
-                        changeableElement.setTextContent(TaskStatus.IN_PROGRESS.toString());
-                        System.out.println("Status изменён на IN_PROGRESS");
-                        break;
-                    case "DONE":
-                        changeableElement.setTextContent(TaskStatus.DONE.toString());
-                        System.out.println("Status изменён на DONE");
-                        break;
-                    default:
-                        System.out.println("Некорректное значение! Status не изменён");
+        for (Task task : tasks) {
+            if (task.getID() == id) {
+                System.out.println("Изменить заголовок (Y/N)?");
+                if (scanner.nextLine().equals("Y")) {
+                    System.out.println("Введите новое значение:");
+                    task.setCaption(scanner.nextLine());
                 }
-            } else {
-                if (changeableElement.getTagName().equals("Status")) {
-                    NewTask.setPriority(doc, changeableElement);
-                } else {
-                    System.out.println("введите новое значение:");
-                    changeableElement.setTextContent(scanner.nextLine());
+
+                System.out.println("Изменить описание (Y/N)?");
+                if (scanner.nextLine().equals("Y")) {
+                    System.out.println("Введите новое значение:");
+                    task.setDescription(scanner.nextLine());
                 }
+
+                System.out.println("Изменить приоритет (Y/N)?");
+                if (scanner.nextLine().equals("Y")) {
+                    System.out.println("Введите новое значение:");
+                    task.setPriority(scanner.nextLine());
+                }
+
+                System.out.println("Изменить дедлайн (Y/N)?");
+                if (scanner.nextLine().equals("Y")) {
+                    System.out.println("Введите новое значение:");
+                    task.setDeadline(scanner.nextLine());
+                }
+
+                System.out.println("Изменить статус (Y/N)?");
+                if (scanner.nextLine().equals("Y")) {
+                    System.out.println("Введите новое значение: new/done/in progress");
+                    switch (scanner.nextLine()) {
+                        case "new":
+                            task.setStatus(TaskStatus.NEW);
+                            break;
+                        case "done":
+                            task.setStatus(TaskStatus.DONE);
+                            break;
+                        case "in progress":
+                            task.setStatus(TaskStatus.IN_PROGRESS);
+                            break;
+                        default:
+                            System.out.println("Некорректный ввод! Статус не изменён.");
+                    }
+
+                }
+                return;
             }
         }
-
-        NewTask.writeDocument(doc, "To-Do List.xml");
+        System.out.println("Задания с ID = " + id + " не существует!");
     }
 }
